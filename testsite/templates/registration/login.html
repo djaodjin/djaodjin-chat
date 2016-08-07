@@ -1,0 +1,6 @@
+  <form method="post" action="./?next={{next}}">
+    <input type="hidden" name="csrfmiddlewaretoken" value="{{csrf_token}}">
+    {{form|as_html}}
+    <input type="submit" value="Login" />
+  </form>
+

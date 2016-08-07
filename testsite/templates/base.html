@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Chat Testsite</title>
+  <script type="text/javascript" src="/static/vendor/js/jquery.js"></script>
+  {% if csrf_token %}
+  <meta name="csrf-token" content="{{csrf_token}}">
+  <script type="text/javascript">
+    function csrfSafeMethod(method) {
+        // these HTTP methods do not require CSRF protection
+        return (/^(GET|HEAD|OPTIONS|TRACE)$/.test(method));
+    }
+    $.ajaxSetup({
+        crossDomain: false, // obviates need for sameOrigin test
+        beforeSend: function(xhr, settings) {
+            if (!csrfSafeMethod(settings.type)) {
+                xhr.setRequestHeader("X-CSRFToken", "{{csrf_token}}");
+            }
+        }
+    });
+  </script>
+  {% endif %}
+  {% block localheader %}{% endblock %}
+</head>
+<body>
+  {% block menubar %}
+  <div>
+  <a href="/">Home</a>
+  {% if request|is_authenticated %}
+  | <a href="/logout/">Sign Out</a>
+  {% else %}
+  | <a href="/login/?next={{request.path}}">Sign In</a>
+  {% endif %}
+  </div>
+  {% endblock %}
+  {% block content %}{% endblock %}
+  {% block footer %}{% endblock %}
+</body>
+{% block bodyscripts %}{% endblock %}
+</html>
