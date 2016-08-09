@@ -25,6 +25,8 @@
 from django.conf import settings
 
 _SETTINGS = {
+    'THREAD_STORE': 'chat.threadstore.InMemoryThreadStore',
+    'CLAIM_STORE': 'chat.claimstore.InMemoryClaimStore',
 }
 
 _SETTINGS.update(getattr(settings, 'CHAT', {}))
@@ -32,4 +34,7 @@ _SETTINGS.update(getattr(settings, 'CHAT', {}))
 
 AUTH_USER_MODEL = getattr(
     settings, 'AUTH_USER_MODEL', 'django.contrib.auth.models.User')
+
+THREAD_STORE = _SETTINGS.get('THREAD_STORE')
+CLAIM_STORE = _SETTINGS.get('CLAIM_STORE')
 

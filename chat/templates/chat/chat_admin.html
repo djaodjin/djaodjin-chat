@@ -6,7 +6,21 @@
 <div id="root">
 </div>
 
+<div id="active_list" style="height: 150px; overflow-y:scroll;border: solid gray 1px;">
+</div>
+<hr/>
+<div>
+  <span id="chat_title" ></span>
+  <span id="chat_claim"></span>
+</div>
+<button id="claim">Claim</button>
+<button id="unclaim">Unclaim</button>
+<div id="messages" ></div>
+<input type="text" id="message" ></input>
 
+
+<script type="text/javascript" charset="utf-8" src="/static/js/reconnecting-socket.js"></script>
+<script type="text/javascript" charset="utf-8" src="/static/js/djaodjin-chat-api.js"></script>
 <script type="text/javascript" charset="utf-8" src="/static/js/djaodjin-chat-admin.js"></script>
 
 {% endblock %}

@@ -1,10 +1,10 @@
 // Note that the path doesn't matter for routing; any WebSocket
 // connection gets bumped over to WebSocket consumers
 
-var attempts = 1;
-function generateInterval (k) {
-    return Math.min(5, (Math.pow(2, k) - 1)) * 1000;
-}
+var chatApi = new ChatApi();
+chatApi.on('connect', function(){
+    chatApi.subscribe();
+});
 
 function generateId(){
     // http://stackoverflow.com/a/2117523
@@ -23,56 +23,28 @@ function getId(){
     return guid
 }
 
-var socket;
-function createWebSocket () {
-    socket = new WebSocket("ws://" + window.location.host + "/chat/");
-
-    socket.addEventListener('open',function () {
-        attempts = 1; 
-
-    });
-    
-    socket.addEventListener('close', function () {
-        var time = generateInterval(attempts);
-        
-        setTimeout(function () {
-            attempts++;
-            
-            createWebSocket(); 
-        }, time);
-    });
-
-    socket.addEventListener('message',function(e) {
-        console.log(e);
-        var $nextMessage = $('<div/>');
-        $nextMessage.text(e.data);
-        $chatLog.append($nextMessage);
-    });
-    socket.addEventListener('open',function() {
-        var guid = getId();
-        socket.send(JSON.stringify(['login', guid]));
-    });
-
-}
-createWebSocket();
-
-
 
 var $chatSend = $('#chatsend');
 var $chatInput = $('#chatinput');
 var $chatLog = $('#chatlog');
 
+chatApi.on('message', function(message){
+    var $message = $('<div/>');
+    $message.text(message);
+    $chatLog.append($message);
+});
+
+
 function sendMessage(message){
-    socket.send(JSON.stringify(['message', message]));
-    var $nextMessage = $('<div/>');
-    $nextMessage.text(message);
-    $chatLog.append($nextMessage);
+    // var $nextMessage = $('<div/>');
+    // $nextMessage.text(message);
+    // $chatLog.append($nextMessage);
 }
 
 function processMessageSubmit(){
     var message = $chatInput.val();
 
-    sendMessage(message);
+    chatApi.send(message)
     $chatInput.val('');
 }
 

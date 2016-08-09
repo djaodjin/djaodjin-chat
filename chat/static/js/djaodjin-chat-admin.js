@@ -1,77 +1,131 @@
-// Note that the path doesn't matter for routing; any WebSocket
-// connection gets bumped over to WebSocket consumers
 
+var chatApi = new ChatApi();
+chatApi.on('connect', function(){
+    chatApi.whoami();
+    chatApi.subscribe_active();
+    chatApi.subscribe_claims();
+});
 var $root = $('#root');
 
-var threadRoots ={};
+var $messages = $('#messages');
+
 function displayMessage(message){
-    var $threadRoot;
-    if (threadRoots[message.thread]){
-        $threadRoot = threadRoots[message.thread]
-    }else{
-        $threadRoot = $('<div/>');
-        threadRoots[message.thread] = $threadRoot;
-
-        $threadRoot.messages = $('<div/>');
-        $threadRoot.append($threadRoot.messages);
-
-        $threadRoot.input = $('<input/>');
-        $threadRoot.append($threadRoot.input);
-
-        $threadRoot.append($('<hr/>'));
-
-        $threadRoot.input.on('keydown', function (event){
-            if (event.which == 13 || event.keyCode == 13) {
-                event.preventDefault();
-                var messageText = $threadRoot.input.val();
-                $threadRoot.input.val('');
-                displayMessage({
-                    'text': messageText,
-                    'thread': message.thread,
-                    't': new Date().toString(),
-                    'from': 'me'
-                })
-                
-                socket.send(JSON.stringify(['message_admin', message.thread, messageText]));
-                return false;
-            }
-            return true;
-        });
-
-
-        $root.append($threadRoot);
-
-    }
-
     var $message = $('<div/>');
     $message.text((message.from || 'anonymous') + ': '+  message.text);
+    $messages.append($message);
+
+}
+
+var myId = null;
+var $chat_title = $('#chat_title');
+var $chat_claim = $('#chat_claim');
+var currentActive = null;
+function setChatWindow(active){
     
 
-    $threadRoot.messages.append($message);
-
-}
-
-function handleMessage(m){
-
-    var parsed;
-    try{
-        var parsed = JSON.parse(m);
-    }catch(e){
-        parsed = null;
-    }
-    console.log(parsed);
-
-    if (parsed){
-        var command = parsed[0];
-
-        if (command == 'broadcastmessage' ){
-            var message = parsed[1];
-            
-            displayMessage(message);
+    currentActive = active;
+    $chat_title.text(active);
+    var claimText;
+    if ( claims[active]){
+        if ( claims[active] == myId ){
+            claimText  = 'you';
+        }else{
+            claimText = claim[active];
         }
+    }else{
+        claimText = '';
     }
+    $chat_claim.text(claimText);
+    chatApi.subscribe_to( active );
+
+    $messages.empty();
+
 }
 
+var $claim_button = $('#claim');
+$claim_button.on('click', function(){
+    chatApi.add_claim(currentActive)
+});
+var $unclaim_button = $('#unclaim');
+$unclaim_button.on('click', function(){
+    chatApi.remove_claim(currentActive)
+});
+
+chatApi.on('message_from', function(message){
+    if ( !active_set[message.from] || message.from == currentActive ){
+        displayMessage(message);
+    }
+});
+
+chatApi.on('youare', function(id){
+    myId = id;
+    updateActive();
+});
+
+var claims = {};
+chatApi.on('claimed', function(new_claims){
+    for ( var k in new_claims){
+        claims[k] = new_claims[k];
+    }
+    updateActive();
+});
+chatApi.on('unclaimed', function(new_claims){
+    for ( var k in new_claims){
+        delete claims[k];
+    }
+    updateActive();
+});
+
+var $active_list = $('#active_list');
+var active_set = {};
+function updateActive(){
+    $active_list.empty();
+    for ( active in active_set){
+        var $member_container = $('<div/>');
+        var $member = $('<span/>');
+        $member.css({
+            'cursor': 'pointer',
+            'color': 'blue',
+            'text-decoration': 'underline'
+        });
+        $member.on('click', function(active){
+            setChatWindow(active);
+        }.bind(null, active));
+        $member.text(active);
+        
+        $member_container.append($member);
+
+        if ( claims[active] ){
+            
+            var $claim = $('<span/>');
+            var claimText;
+            if ( claims[active] == myId ){
+                claimText = 'you';
+            }else{
+                claimText = claims[active];
+            }
+            $claim.text(claimText);
+            $member_container.append(document.createTextNode(' '));
+            $member_container.append($claim);
+        }
+
+        $active_list.append($member_container);
+    }
+    
+}
+chatApi.on('became_active', function(new_active){
+    for ( var i =0 ; i < new_active.length; i ++){
+        active_set[new_active[i]] = true;
+    }
+    updateActive();
+});
+
+chatApi.on('became_inactive', function(new_active){
+    for ( var i =0 ; i < new_active.length; i ++){
+        delete active_set[new_active[i]];
+    }
+    updateActive();
+});
 
 var attempts = 1;
 function generateInterval (k) {
@@ -96,65 +150,33 @@ function getId(){
 }
 
 
-var socket;
-function createWebSocket () {
-    socket = new WebSocket("ws://" + window.location.host + "/chat-admin/");
 
-    socket.addEventListener('open',function () {
-        // reset the tries back to 1 since we have a new socket opened.
-        attempts = 1; 
+var $message = $('#message');
+var $to = $('#to');
 
-        var guid = getId();
-        socket.send(JSON.stringify(['login', guid]));
+$('#message').on('keydown', function (event){
+    if (currentActive && (event.which == 13 || event.keyCode == 13)) {
+        event.preventDefault();
 
+        var messageText = $message.val();
+        $message.val('');
+        chatApi.send_to(currentActive, messageText);
 
-        // ...Your app's logic...
-    });
-    
-    socket.addEventListener('close', function () {
-        var time = generateInterval(attempts);
-        
-        setTimeout(function () {
-            // We've tried to reconnect so increment the attempts by 1
-            attempts++;
-            
-            // Socket has closed so try to reconnect every 10 seconds.
-            createWebSocket(); 
-        }, time);
-    });
+        return false;
+    }
+    return true;
+});
 
-    socket.addEventListener('message',function(e) {
-        console.log(e);
-        var $nextMessage = $('<div/>');
-        // $nextMessage.text(e.data);
-        // $chatLog.append($nextMessage);
-        console.log(e.data);
-        handleMessage(e.data)
-        
-    });
-    socket.addEventListener('open',function() {
-        var guid = 'asdf';
-        socket.send(JSON.stringify(['login', guid]));
-        socket.send(JSON.stringify(['get_recent']));
-    });
+var $thread = $('#thread');
+var $subscribe = $('#subscribe');
 
-}
-createWebSocket();
+$subscribe.on('click', function(){
+    chatApi.subscribe_to( $thread.val())
+});
 
+var $getActive = $('#getActive');
+$getActive.on('click', function(){
 
+    chatApi.subscribe_active();
 
-
-
-// <div id="chatlog">
-// </div>
-// <div>
-//   <input id="chatto" type="text" value="asdf"></input>
-// </div>
-// <div>
-//   <input id="chatinput" type="text"></input>
-// </div>
-// <div>
-//   <button id="chatsend">Send</button>
-// </div>
-
-
+});

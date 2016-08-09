@@ -30,8 +30,19 @@ from django.conf.urls import url, include
 from django.contrib import admin
 admin.autodiscover()
 
+class TestChatView(TemplateView):
+    template_name = "chat/chat.html"
+
+    def get_context_data(self, **kwargs):
+        context = super(TestChatView, self).get_context_data(**kwargs)
+        self.request.session.save()
+        print 'hih', self.request.session.session_key, self.request.session.items()
+
+        return context
+
+
 urlpatterns = [
     url(r'', include('django.contrib.auth.urls')),
-    url(r'^chat/$', TemplateView.as_view(template_name="chat/chat.html")),
+    url(r'^chat/$', TestChatView.as_view(template_name="chat/chat.html")),
     url(r'^chat-admin/$', TemplateView.as_view(template_name="chat/chat_admin.html")),
 ]
