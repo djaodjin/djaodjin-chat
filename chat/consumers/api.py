@@ -169,7 +169,10 @@ def send_to(message, thread_id, text):
 
 
     Group(thread_id).send({
-        'text': json.dumps(['message', text]),
+        "text": json.dumps(['message_from', {
+            'text': text,
+            'from': message.user.username
+        }]),
     })
     Group('%s-admin' % thread_id).send({
         "text": json.dumps(['message_from', {
