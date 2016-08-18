@@ -1,13 +1,17 @@
 from ..models import ChatMessage
 from channels.sessions import channel_session, http_session
-from channels.auth import http_session_user, channel_session_user, channel_session_user_from_http
-from channels.sessions import channel_session, enforce_ordering
+from channels.auth import (http_session_user,
+                           channel_session_user,
+                           channel_session_user_from_http)
+
+from channels.sessions import (channel_session,
+                               enforce_ordering)
 from channels import Channel, Group
 import json
 import traceback
 from datetime import datetime, timedelta
 import inspect
-import api
+from . import api
 from importlib import import_module
 from django.conf import settings
 
@@ -56,7 +60,7 @@ def ws_message(message):
 
             arg_spec = inspect.getargspec(fn)
             # first arg is always the channel message object
-            arg_names= arg_spec.args[1:]
+            arg_names = arg_spec.args[1:]
 
 
             kws = {arg_name: arg_val

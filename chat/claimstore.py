@@ -19,13 +19,13 @@ def load_claim_store(path):
 
 
 class ClaimStore(object):
-    def getClaims(self):
+    def get_claims(self):
         pass
 
-    def addClaim(self, uid, thread_id):
+    def add_claim(self, uid, thread_id):
         pass
 
-    def removeClaim(self, uid):
+    def remove_claim(self, thread_id, uid):
         pass
 
 
@@ -33,13 +33,13 @@ class InMemoryClaimStore(ClaimStore):
     def __init__(self):
         self.claims = {}
 
-    def getClaims(self):
+    def get_claims(self):
         return dict(self.claims)
 
-    def addClaim(self, thread_id, uid ):
+    def add_claim(self, thread_id, uid):
         self.claims[thread_id] = uid
 
-    def removeClaim(self, thread_id, uid):
+    def remove_claim(self, thread_id, uid):
         if self.claims.get(thread_id) == uid:
             del self.claims[thread_id]
             return True

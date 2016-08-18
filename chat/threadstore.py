@@ -18,26 +18,26 @@ def load_thread_store(path):
 
 
 class ThreadStore(object):
-    def getActive(self):
+    def get_active(self):
         pass
 
-    def addActive(self, uid):
+    def add_active(self, uid):
         pass
 
-    def removeActive(self, uid):
+    def remove_active(self, uid):
         pass
 
 class InMemoryThreadStore(ThreadStore):
     def __init__(self):
         self.active = set()
 
-    def getActive(self):
+    def get_active(self):
         return set(self.active)
 
-    def addActive(self, uid):
+    def add_active(self, uid):
         self.active.add(uid)
 
-    def removeActive(self, uid):
+    def remove_active(self, uid):
         try:
             self.active.remove(uid)
         except KeyError:

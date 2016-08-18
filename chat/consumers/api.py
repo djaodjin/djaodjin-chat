@@ -1,4 +1,4 @@
-from channels import Channel, Group
+from channels import Group
 from ..models import ChatMessage
 from rest_framework import serializers
 from .. import settings
@@ -19,7 +19,7 @@ class EmptySerializer(serializers.Serializer):
     pass
 
 class SendSerializer(serializers.Serializer):
-    text=serializers.CharField(max_length=255)
+    text = serializers.CharField(max_length=255)
 
 # unauthed
 @s(SendSerializer)
@@ -65,7 +65,7 @@ def subscribe(message):
     print 'subscribe', thread_id
 
     Group(thread_id).add(message.reply_channel)
-    thread_store.addActive(thread_id)
+    thread_store.add_active(thread_id)
     Group('__active').send({
         'text': json.dumps(['became_active', [thread_id]])
     })
@@ -78,7 +78,7 @@ def subscribe_active(message):
 
     Group('__active').add(message.reply_channel)
     message.reply_channel.send({
-        'text': json.dumps(['became_active', list(thread_store.getActive())])
+        'text': json.dumps(['became_active', list(thread_store.get_active())])
     })
 
 @s(EmptySerializer)
@@ -86,7 +86,7 @@ def subscribe_claims(message):
 
     Group('__claims').add(message.reply_channel)
     message.reply_channel.send({
-        'text': json.dumps(['claimed', claim_store.getClaims()])
+        'text': json.dumps(['claimed', claim_store.get_claims()])
     })
 
 # @s(EmptySerializer)
@@ -94,7 +94,7 @@ def subscribe_claims(message):
 #     pass
 
 class SubscribeToSerializer(serializers.Serializer):
-    thread_id=serializers.CharField(max_length=255)
+    thread_id = serializers.CharField(max_length=255)
 
 @s(SubscribeToSerializer)
 def subscribe_to(message, thread_id):
@@ -102,12 +102,12 @@ def subscribe_to(message, thread_id):
     Group('%s-admin' % thread_id).add(message.reply_channel)
 
 class UnsubscribeSerializer(serializers.Serializer):
-    thread_id=serializers.CharField(max_length=255)
+    thread_id = serializers.CharField(max_length=255)
 
 @s(UnsubscribeSerializer)
 def unsubscribe_to(message, thread_id):
     Group(thread_id).discard(message.reply_channel)
-    thread_store.removeActive(thread_id)
+    thread_store.remove_active(thread_id)
 
     Group('__active').send({
         'text': json.dumps(['became_inactive', [thread_id]])
@@ -118,8 +118,8 @@ def unsubscribe_to(message, thread_id):
 
 
 class AddClaimSerializer(serializers.Serializer):
-    thread_id=serializers.CharField(max_length=255)
-    claimer=serializers.CharField(max_length=255, required=False,allow_null=True)
+    thread_id = serializers.CharField(max_length=255)
+    claimer = serializers.CharField(max_length=255, required=False,allow_null=True)
 
 @s(AddClaimSerializer)
 def add_claim(message, thread_id, claimer=None):
@@ -128,22 +128,22 @@ def add_claim(message, thread_id, claimer=None):
     if claimer is None:
         claimer = message.user.username
 
-    claim_store.addClaim(thread_id, claimer)
+    claim_store.add_claim(thread_id, claimer)
     Group('__claims').send({
         'text': json.dumps(['claimed', {thread_id: claimer}])
     })
 
 
 class RemoveClaimSerializer(serializers.Serializer):
-    thread_id=serializers.CharField(max_length=255)
-    claimer=serializers.CharField(max_length=255, required=False, allow_null=True)
+    thread_id = serializers.CharField(max_length=255)
+    claimer = serializers.CharField(max_length=255, required=False, allow_null=True)
 
 @s(RemoveClaimSerializer)
 def remove_claim(message, thread_id, claimer=None):
     if claimer is None:
         claimer = message.user.username
         
-    success = claim_store.removeClaim(thread_id, claimer)
+    success = claim_store.remove_claim(thread_id, claimer)
     if success:
         Group('__claims').send({
             'text': json.dumps(['unclaimed', {thread_id: claimer}])
@@ -151,13 +151,13 @@ def remove_claim(message, thread_id, claimer=None):
 
 
 class SetClaimsSerializer(serializers.Serializer):
-    thread_id=serializers.CharField(max_length=255)
-    claimers=serializers.ListField(serializers.CharField(max_length=255, required=False))
+    thread_id = serializers.CharField(max_length=255)
+    claimers = serializers.ListField(serializers.CharField(max_length=255, required=False))
 
 
 class SendToSerializer(serializers.Serializer):
-    thread_id=serializers.CharField(max_length=255)
-    text=serializers.CharField(max_length=255)
+    thread_id = serializers.CharField(max_length=255)
+    text = serializers.CharField(max_length=255)
 
 @s(SendToSerializer)
 def send_to(message, thread_id, text):
@@ -182,7 +182,7 @@ def send_to(message, thread_id, text):
         }]),
     })
 
-    print 'send_to', thread_id ,text
+    print 'send_to', thread_id, text
 
 
 @s(EmptySerializer)
