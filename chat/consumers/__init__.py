@@ -54,7 +54,6 @@ def ws_message(message):
         try:
             fn_path = content[0]
             args = content[1:]
-            print content
 
             fn = MESSAGE_FUNCTIONS[fn_path]
 

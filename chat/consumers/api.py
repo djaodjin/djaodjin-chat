@@ -24,10 +24,6 @@ class SendSerializer(serializers.Serializer):
 # unauthed
 @s(SendSerializer)
 def send(message, text):
-    # guid = message.http_session['guid']
-    # client, _ = ChatClient.objects.get_or_create(guid=guid)
-
-    print message.http_session.items()
 
     thread_id = message.http_session['chat-thread']
 
@@ -61,8 +57,6 @@ def subscribe(message):
         thread_id = message.http_session.session_key
         message.http_session['chat-thread'] = thread_id
         message.http_session.save()
-
-    print 'subscribe', thread_id
 
     Group(thread_id).add(message.reply_channel)
     thread_store.add_active(thread_id)
@@ -98,7 +92,6 @@ class SubscribeToSerializer(serializers.Serializer):
 
 @s(SubscribeToSerializer)
 def subscribe_to(message, thread_id):
-    print 'subscribe to', thread_id
     Group('%s-admin' % thread_id).add(message.reply_channel)
 
 class UnsubscribeSerializer(serializers.Serializer):
@@ -123,7 +116,6 @@ class AddClaimSerializer(serializers.Serializer):
 
 @s(AddClaimSerializer)
 def add_claim(message, thread_id, claimer=None):
-    print 'add_claim', thread_id, claimer
 
     if claimer is None:
         claimer = message.user.username
@@ -182,7 +174,6 @@ def send_to(message, thread_id, text):
         }]),
     })
 
-    print 'send_to', thread_id, text
 
 
 @s(EmptySerializer)
