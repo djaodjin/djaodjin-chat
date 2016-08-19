@@ -1,5 +1,6 @@
 from importlib import import_module
 from django.core.exceptions import ImproperlyConfigured
+from collections import Counter
 
 def load_thread_store(path):
     dot_pos = path.rfind('.')
@@ -21,6 +22,9 @@ class ThreadStore(object):
     def get_active(self):
         pass
 
+    def is_active(self, uid):
+        pass
+
     def add_active(self, uid):
         pass
 
@@ -29,16 +33,17 @@ class ThreadStore(object):
 
 class InMemoryThreadStore(ThreadStore):
     def __init__(self):
-        self.active = set()
+        self.active = Counter()
 
     def get_active(self):
-        return set(self.active)
+        return set(self.active.keys())
+
+    def is_active(self, uid):
+        return self.active[uid] > 0
 
     def add_active(self, uid):
-        self.active.add(uid)
+        self.active[uid] += 1
+        assert self.active[uid] >= 0
 
     def remove_active(self, uid):
-        try:
-            self.active.remove(uid)
-        except KeyError:
-            pass
+        self.active[uid] = max(0, self.active[uid] - 1)

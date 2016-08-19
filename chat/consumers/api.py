@@ -102,9 +102,10 @@ def unsubscribe_to(message, thread_id):
     Group(thread_id).discard(message.reply_channel)
     thread_store.remove_active(thread_id)
 
-    Group('__active').send({
-        'text': json.dumps(['became_inactive', [thread_id]])
-    })
+    if not thread_store.is_active(thread_id):
+        Group('__active').send({
+            'text': json.dumps(['became_inactive', [thread_id]])
+        })
 
 # def list_subscriptions(message):
 #     pass
