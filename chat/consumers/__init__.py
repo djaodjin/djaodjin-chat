@@ -29,6 +29,7 @@ MESSAGE_FUNCTIONS = {
     '/chat-api/remove_claim': api.remove_claim,
     '/chat-api/send_to': api.send_to,
     '/chat-api/whoami': api.whoami,
+    '/chat-api/get_messages': api.get_messages,
 }
 
 

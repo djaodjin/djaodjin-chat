@@ -11,7 +11,7 @@ var $messages = $('#messages');
 
 function displayMessage(message){
     var $message = $('<div/>');
-    $message.text((message.from || 'anonymous') + ': '+  message.text);
+    $message.text((message.from || 'anonymous') + (message.t ? '('+message.t+')': '' )+ ': '+  message.text);
     $messages.append($message);
 
 }
@@ -40,6 +40,7 @@ function setChatWindow(active){
 
     $messages.empty();
 
+    chatApi.get_messages(active);
 }
 
 var $claim_button = $('#claim');
@@ -56,6 +57,14 @@ chatApi.on('message_from', function(message){
         displayMessage(message);
     }
 });
+
+chatApi.on('get_messages_reply', function(reply){
+    messages = reply['messages'];
+    for (var i = messages.length-1; i >= 0; i --){
+        m = messages[i];
+        displayMessage(m);
+    }
+})
 
 chatApi.on('youare', function(id){
     myId = id;

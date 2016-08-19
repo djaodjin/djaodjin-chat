@@ -74,6 +74,9 @@ ChatApi.prototype.remove_claim = function(thread_id, claimer){
 ChatApi.prototype.send_to = function(thread_id, text){
     this._apiCall('/send_to', [ thread_id, text ]);
 }
+ChatApi.prototype.get_messages = function(thread_id, cursor){
+    this._apiCall('/get_messages', [ thread_id, cursor ]);
+}
 
 ChatApi.prototype.on = function(event, f){
 

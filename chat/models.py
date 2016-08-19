@@ -4,6 +4,11 @@ from django.db import models
 from . import settings
 
 class ChatMessage(models.Model):
+    class Meta:
+        index_together = [
+            ['thread', 'created_at'],
+        ]
+
     "Model for storing chat messages."
     user = models.ForeignKey(settings.AUTH_USER_MODEL, null=True)
     message = models.CharField(max_length=255)

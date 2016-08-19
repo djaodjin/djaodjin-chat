@@ -4,6 +4,7 @@ from rest_framework import serializers
 from .. import settings
 from .. import threadstore, claimstore
 import json
+import dateutil
 
 thread_store = threadstore.load_thread_store(settings.THREAD_STORE)
 claim_store = claimstore.load_claim_store(settings.CLAIM_STORE)
@@ -109,6 +110,40 @@ def unsubscribe_to(message, thread_id):
 
 # def list_subscriptions(message):
 #     pass
+
+class GetMessagesSerializer(serializers.Serializer):
+    thread_id = serializers.CharField(max_length=255)
+    cursor = serializers.DateTimeField(format='iso-8601',allow_null=True)
+
+@s(GetMessagesSerializer)
+def get_messages(message, thread_id, cursor=None):
+    ms = ChatMessage.objects.filter(thread=thread_id).order_by('-created_at')
+
+    if cursor:
+        ms = ms.filter(created_at__lt=cursor)
+
+    message_batch = []
+    for m in ms.all()[:20]:
+        message_info = {
+            'text': m.message,
+            't' : m.created_at.isoformat(),
+        }
+        if m.user:
+            message_info['from'] = m.user.username
+
+        message_batch.append(message_info)
+
+
+    reply = {
+        'messages': message_batch,
+        'thread': thread_id,
+    }
+    if message_batch:
+        reply['cursor'] = message_batch[-1]['t']
+
+    message.reply_channel.send({
+        'text': json.dumps(['get_messages_reply', reply])
+    })
 
 
 class AddClaimSerializer(serializers.Serializer):
