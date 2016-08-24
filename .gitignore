@@ -1,0 +1,6 @@
+*~
+*.pyc
+.DS_Store
+credentials
+db.sqlite
+_installTop_

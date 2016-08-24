@@ -1,0 +1,13 @@
+Django==1.10
+Twisted==16.2.0
+asgiref==0.14.0
+autobahn==0.15.0
+channels==0.17.2
+daphne==0.14.3
+djangorestframework==3.4.3
+six==1.10.0
+txaio==2.5.1
+wsgiref==0.1.2
+zope.interface==4.2.0
+
+
