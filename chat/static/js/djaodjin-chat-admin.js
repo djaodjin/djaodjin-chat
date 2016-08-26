@@ -199,8 +199,6 @@
             var self = this;
 
             var selector = '.' + this.options.cssPrefix + name;
-            console.log(selector)
-            console.log(this.$root);
             return this.$root.find(selector);
         }
     }

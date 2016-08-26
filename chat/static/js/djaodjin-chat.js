@@ -17,8 +17,6 @@
             self.$chatInput = self.findPrefixed('chatinput');
             self.$chatLog = self.findPrefixed('chatlog');
 
-            console.log(self.$chatSend);
-
             self.chatApi = new ChatApi();
             self.chatApi.on('connect', function(){
                 self.chatApi.subscribe();
@@ -62,8 +60,6 @@
         findPrefixed: function(name){
 
             var selector = '.' + this.options.cssPrefix + name;
-            console.log(selector)
-            console.log(this.$root);
             return this.$root.find(selector);
         }
     }

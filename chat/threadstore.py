@@ -1,6 +1,5 @@
 from importlib import import_module
 from django.core.exceptions import ImproperlyConfigured
-from collections import Counter
 from datetime import datetime, timedelta
 
 from . import settings

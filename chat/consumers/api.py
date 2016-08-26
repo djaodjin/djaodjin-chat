@@ -39,10 +39,9 @@ def send(message, text):
         "text": json.dumps(['message', text]),
     })
 
-    print 'current active admins', admin_store.get_active()
     if not admin_store.get_active():
         Group(thread_id).send({
-            "text": json.dumps(['message_from',{
+            "text": json.dumps(['message_from', {
                 'text': 'Please wait for a representative to be with you.',
                 'thread': thread_id,
                 'from': 'Bot',
@@ -74,8 +73,9 @@ def subscribe(message):
 def subscribe_active(message):
 
     Group('__active').add(message.reply_channel)
+
     message.reply_channel.send({
-        'text': json.dumps(['became_active', list(thread_store.get_active())])
+        'text': json.dumps(['became_active', list(thread_store.get_active()) ])
     })
 
 @s(EmptySerializer)
@@ -111,7 +111,7 @@ def unsubscribe_to(message, thread_id):
 
 class GetMessagesSerializer(serializers.Serializer):
     thread_id = serializers.CharField(max_length=255)
-    cursor = serializers.DateTimeField(format='iso-8601',allow_null=True)
+    cursor = serializers.DateTimeField(format='iso-8601', allow_null=True)
 
 @s(GetMessagesSerializer)
 def get_messages(message, thread_id, cursor=None):
@@ -146,7 +146,7 @@ def get_messages(message, thread_id, cursor=None):
 
 class AddClaimSerializer(serializers.Serializer):
     thread_id = serializers.CharField(max_length=255)
-    claimer = serializers.CharField(max_length=255, required=False,allow_null=True)
+    claimer = serializers.CharField(max_length=255, required=False, allow_null=True)
 
 @s(AddClaimSerializer)
 def add_claim(message, thread_id, claimer=None):
@@ -168,7 +168,7 @@ class RemoveClaimSerializer(serializers.Serializer):
 def remove_claim(message, thread_id, claimer=None):
     if claimer is None:
         claimer = message.user.username
-        
+
     success = claim_store.remove_claim(thread_id, claimer)
     if success:
         Group('__claims').send({

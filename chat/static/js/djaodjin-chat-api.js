@@ -7,8 +7,7 @@ function ChatApi(){
 
     var self = this;
     this.socket.addEventListener('message', function (e){
-        console.log(e.data);
-        
+        // console.log(e.data);
         
         var decoded = JSON.parse(e.data);
         var event = decoded[0];
