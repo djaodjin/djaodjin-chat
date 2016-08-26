@@ -1,8 +1,9 @@
 function ChatApi(){
     this.base = '/chat-api';
     this.handlers = {};
+    this.watchDogTimeout = 9000;
 
-    this.socket = new ReconnectingSocket("ws://" + window.location.host + "/chat-admin/");
+    this.socket = new ReconnectingSocket("ws://" + window.location.host + "/chat/");
 
     var self = this;
     this.socket.addEventListener('message', function (e){
@@ -17,6 +18,23 @@ function ChatApi(){
         }
         self._broadcast(event, args);
     });
+
+    this.on('connect', function(){
+        this.runWatchDog();
+    }.bind(this));
+
+}
+
+ChatApi.prototype.runWatchDog = function(){
+    this._apiCall('/ping', []);
+    this.scheduleWatchDog();
+}
+
+ChatApi.prototype.scheduleWatchDog = function(){
+    if (this.watchDogHandle){
+        clearTimeout(this.watchDogHandle);
+    }
+    this.watchDogHandle = setTimeout(this.runWatchDog.bind(this), this.watchDogTimeout);
 }
 
 ChatApi.prototype._broadcast = function(event, args){

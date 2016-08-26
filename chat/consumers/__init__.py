@@ -30,6 +30,7 @@ MESSAGE_FUNCTIONS = {
     '/chat-api/send_to': api.send_to,
     '/chat-api/whoami': api.whoami,
     '/chat-api/get_messages': api.get_messages,
+    '/chat-api/ping': api.ping,
 }
 
 
@@ -83,6 +84,7 @@ def ws_message(message):
                 raise Exception('invalid args')
 
             fn(message, **serializer.validated_data)
+            api.ping(message)
 
         except Exception as e:
             traceback.print_exc()
@@ -96,8 +98,7 @@ def ws_disconnect(message):
     http_session = session_engine.SessionStore(session_key=message.channel_session['http_session_key'])
     message.http_session = http_session
 
-    if 'chat-thread' in message.http_session:
-        api.unsubscribe_to(message, message.http_session['chat-thread'])
+    api.logout(message)
 
-    Group('__active').discard(message.reply_channel)
+
 
