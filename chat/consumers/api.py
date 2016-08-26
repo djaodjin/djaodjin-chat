@@ -114,12 +114,22 @@ def unsubscribe_to(message, thread_id):
         })
 
 class GetMessagesSerializer(serializers.Serializer):
-    thread_id = serializers.CharField(max_length=255)
+    thread_id = serializers.CharField(max_length=255, allow_null=True)
     cursor = serializers.DateTimeField(format='iso-8601', allow_null=True)
 
 @s(GetMessagesSerializer)
-def get_messages(message, thread_id, cursor=None):
-    ms = ChatMessage.objects.filter(thread=thread_id).order_by('-created_at')
+def get_messages(message, thread_id=None, cursor=None):
+
+    ms = ChatMessage.objects
+
+    if thread_id is None:
+        ms = ms.filter(thread=message.http_session['chat-thread'])
+    else:
+        assert message.user.is_staff
+
+        ms = ms.filter(thread=thread_id)
+
+    ms = ms.order_by('-created_at')
 
     if cursor:
         ms = ms.filter(created_at__lt=cursor)
@@ -137,9 +147,11 @@ def get_messages(message, thread_id, cursor=None):
 
 
     reply = {
-        'messages': message_batch,
-        'thread': thread_id,
+        'messages': message_batch
     }
+
+    if thread_id:
+        reply['thread'] = thread_id,
     if message_batch:
         reply['cursor'] = message_batch[-1]['t']
 

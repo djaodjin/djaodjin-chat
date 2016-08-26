@@ -20,6 +20,7 @@
             self.chatApi = new ChatApi();
             self.chatApi.on('connect', function(){
                 self.chatApi.subscribe();
+                self.chatApi.get_messages()
             });
 
 
@@ -37,6 +38,17 @@
 
                 self.$chatLog.append($message);
             });
+            self.chatApi.on('get_messages_reply', function(reply){
+                var messages = reply['messages'];
+                for (var i = messages.length-1; i >= 0; i --){
+                    var message = messages[i];
+
+                    var $message = $('<div/>');
+                    $message.text((message.from || 'me') + ': '+  message.text);
+                    self.$chatLog.append($message);
+                }
+            })
+
 
 
             self.$chatSend.on('click', self.processMessageSubmit);
