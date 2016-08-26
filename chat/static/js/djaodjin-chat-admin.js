@@ -133,7 +133,7 @@
             self.$chat_title.text(active);
             var claimText;
             if ( self.claims[active]){
-                if ( self.claims[active] == myId ){
+                if ( self.claims[active] == self.myId ){
                     claimText  = 'you';
                 }else{
                     claimText = claim[active];
@@ -181,7 +181,7 @@
 
                     var $claim = $('<span/>');
                     var claimText;
-                    if ( self.claims[active] == myId ){
+                    if ( self.claims[active] == self.myId ){
                         claimText = 'you';
                     }else{
                         claimText = self.claims[active];
