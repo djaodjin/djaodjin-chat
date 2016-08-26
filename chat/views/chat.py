@@ -33,5 +33,4 @@ class TestChatView(TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super(TestChatView, self).get_context_data(**kwargs)
-        print 'hih', self.request
         return context
