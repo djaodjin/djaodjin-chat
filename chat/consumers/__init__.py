@@ -52,42 +52,38 @@ def ws_message(message):
         print 'error', e
         raise e
     else:
-        try:
-            fn_path = content[0]
-            args = content[1:]
+        fn_path = content[0]
+        args = content[1:]
 
-            fn = MESSAGE_FUNCTIONS[fn_path]
+        fn = MESSAGE_FUNCTIONS[fn_path]
 
-            arg_spec = inspect.getargspec(fn)
-            # first arg is always the channel message object
-            arg_names = arg_spec.args[1:]
-
-
-            kws = {arg_name: arg_val
-                   for arg_name, arg_val in zip(arg_names,
-                                                args)}
-
-            max_arg_count = len(arg_names)
-            if arg_spec.defaults:
-                min_arg_count = max_arg_count - len(arg_spec.defaults)
-            else:
-                min_arg_count = max_arg_count
-
-            arg_count = len(args)
-            if arg_count > max_arg_count or arg_count < min_arg_count:
-                raise Exception('Wrong Number of Args')
+        arg_spec = inspect.getargspec(fn)
+        # first arg is always the channel message object
+        arg_names = arg_spec.args[1:]
 
 
-            serializer = fn.serializer(data=kws)
-            if not serializer.is_valid():
-                raise Exception('invalid args')
+        kws = {arg_name: arg_val
+               for arg_name, arg_val in zip(arg_names,
+                                            args)}
 
-            fn(message, **serializer.validated_data)
-            api.ping(message)
+        max_arg_count = len(arg_names)
+        if arg_spec.defaults:
+            min_arg_count = max_arg_count - len(arg_spec.defaults)
+        else:
+            min_arg_count = max_arg_count
 
-        except Exception as e:
-            traceback.print_exc()
-            raise e
+        arg_count = len(args)
+        if arg_count > max_arg_count or arg_count < min_arg_count:
+            raise Exception('Wrong Number of Args')
+
+
+        serializer = fn.serializer(data=kws)
+        if not serializer.is_valid():
+            print fn_path, args
+            raise Exception('invalid args')
+
+        fn(message, **serializer.validated_data)
+        api.ping(message)
 
 
 @enforce_ordering()
