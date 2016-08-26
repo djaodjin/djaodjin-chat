@@ -48,12 +48,16 @@ def send(message, text):
             }])
         })
 
+    if message.user.is_anonymous():
+        message_from = message.http_session.session_key
+    else:
+        message_from = message.user.username
 
     Group('%s-admin' % thread_id).send({
         "text": json.dumps(['message_from', {
             'text': text,
             'thread': thread_id,
-            'from': message.http_session.session_key,
+            'from': message_from,
         }]),
     })
 
