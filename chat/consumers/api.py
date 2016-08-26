@@ -22,7 +22,6 @@ class EmptySerializer(serializers.Serializer):
 class SendSerializer(serializers.Serializer):
     text = serializers.CharField(max_length=255)
 
-# unauthed
 @s(SendSerializer)
 def send(message, text):
 
@@ -71,8 +70,6 @@ def subscribe(message):
     Group(thread_id).add(message.reply_channel)
 
 
-# authed
-
 @s(EmptySerializer)
 def subscribe_active(message):
 
@@ -88,10 +85,6 @@ def subscribe_claims(message):
     message.reply_channel.send({
         'text': json.dumps(['claimed', claim_store.get_claims()])
     })
-
-# @s(EmptySerializer)
-# def list_recent(message):
-#     pass
 
 class SubscribeToSerializer(serializers.Serializer):
     thread_id = serializers.CharField(max_length=255)
@@ -115,9 +108,6 @@ def unsubscribe_to(message, thread_id):
         Group('__active').send({
             'text': json.dumps(['became_inactive', [thread_id]])
         })
-
-# def list_subscriptions(message):
-#     pass
 
 class GetMessagesSerializer(serializers.Serializer):
     thread_id = serializers.CharField(max_length=255)
