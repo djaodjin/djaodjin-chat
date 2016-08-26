@@ -29,6 +29,10 @@
                 self.chatApi.whoami();
                 self.chatApi.subscribe_active();
                 self.chatApi.subscribe_claims();
+
+                if ( self.currentActive ){
+                    self.updateChatWindow();
+                }
             });
 
 
@@ -91,7 +95,6 @@
                 self.updateActive();
             });
 
-
             self.$message = self.findPrefixed('message');
             self.$to = self.findPrefixed('to');
 
@@ -126,10 +129,10 @@
 
 
         },
-        setChatWindow: function(active){
+        updateChatWindow: function(active){
             var self = this;
 
-            self.currentActive = active;
+            self.currentActive = active || self.currentActive;
             self.$chat_title.text(active);
             var claimText;
             if ( self.claims[active]){
@@ -142,11 +145,11 @@
                 claimText = '';
             }
             self.$chat_claim.text(claimText);
-            self.chatApi.subscribe_to( active );
+            self.chatApi.subscribe_to( self.currentActive );
 
             self.$messages.empty();
 
-            self.chatApi.get_messages(active);
+            self.chatApi.get_messages(self.currentActive);
 
         },
 
@@ -154,7 +157,7 @@
             var self = this;
 
             var $message = $('<div/>');
-            $message.text((message.from || 'anonymous') + (message.t ? '('+message.t+')': '' )+ ': '+  message.text);
+            $message.text((message.from || 'anonymous') + ': '+  message.text);
             self.$messages.append($message);
 
         },
@@ -171,7 +174,7 @@
                     'text-decoration': 'underline'
                 });
                 $member.on('click', function(active){
-                    self.setChatWindow(active);
+                    self.updateChatWindow(active);
                 }.bind(null, active));
                 $member.text(active);
 
