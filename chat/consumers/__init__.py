@@ -1,5 +1,4 @@
 from ..models import ChatMessage
-from channels.sessions import channel_session, http_session
 from channels.auth import (http_session_user,
                            channel_session_user,
                            channel_session_user_from_http)
@@ -30,6 +29,7 @@ MESSAGE_FUNCTIONS = {
     '/chat-api/send_to': api.send_to,
     '/chat-api/whoami': api.whoami,
     '/chat-api/get_messages': api.get_messages,
+    '/chat-api/ping': api.ping,
 }
 
 
@@ -52,41 +52,38 @@ def ws_message(message):
         print 'error', e
         raise e
     else:
-        try:
-            fn_path = content[0]
-            args = content[1:]
+        fn_path = content[0]
+        args = content[1:]
 
-            fn = MESSAGE_FUNCTIONS[fn_path]
+        fn = MESSAGE_FUNCTIONS[fn_path]
 
-            arg_spec = inspect.getargspec(fn)
-            # first arg is always the channel message object
-            arg_names = arg_spec.args[1:]
-
-
-            kws = {arg_name: arg_val
-                   for arg_name, arg_val in zip(arg_names,
-                                                args)}
-
-            max_arg_count = len(arg_names)
-            if arg_spec.defaults:
-                min_arg_count = max_arg_count - len(arg_spec.defaults)
-            else:
-                min_arg_count = max_arg_count
-
-            arg_count = len(args)
-            if arg_count > max_arg_count or arg_count < min_arg_count:
-                raise Exception('Wrong Number of Args')
+        arg_spec = inspect.getargspec(fn)
+        # first arg is always the channel message object
+        arg_names = arg_spec.args[1:]
 
 
-            serializer = fn.serializer(data=kws)
-            if not serializer.is_valid():
-                raise Exception('invalid args')
+        kws = {arg_name: arg_val
+               for arg_name, arg_val in zip(arg_names,
+                                            args)}
 
-            fn(message, **serializer.validated_data)
+        max_arg_count = len(arg_names)
+        if arg_spec.defaults:
+            min_arg_count = max_arg_count - len(arg_spec.defaults)
+        else:
+            min_arg_count = max_arg_count
 
-        except Exception as e:
-            traceback.print_exc()
-            raise e
+        arg_count = len(args)
+        if arg_count > max_arg_count or arg_count < min_arg_count:
+            raise Exception('Wrong Number of Args')
+
+
+        serializer = fn.serializer(data=kws)
+        if not serializer.is_valid():
+            print fn_path, args
+            raise Exception('invalid args')
+
+        fn(message, **serializer.validated_data)
+        api.ping(message)
 
 
 @enforce_ordering()
@@ -96,8 +93,7 @@ def ws_disconnect(message):
     http_session = session_engine.SessionStore(session_key=message.channel_session['http_session_key'])
     message.http_session = http_session
 
-    if 'chat-thread' in message.http_session:
-        api.unsubscribe_to(message, message.http_session['chat-thread'])
+    api.logout(message)
 
-    Group('__active').discard(message.reply_channel)
+
 

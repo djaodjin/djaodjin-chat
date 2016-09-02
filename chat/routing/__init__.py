@@ -27,7 +27,6 @@ Routes for the chat django app
 """
 
 from channels.routing import route
-from channels.routing import route
 from chat.consumers import (ws_message, ws_connect, ws_disconnect)
 
 channel_routing = [

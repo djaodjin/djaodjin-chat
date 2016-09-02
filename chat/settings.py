@@ -27,6 +27,7 @@ from django.conf import settings
 _SETTINGS = {
     'THREAD_STORE': 'chat.threadstore.InMemoryThreadStore',
     'CLAIM_STORE': 'chat.claimstore.InMemoryClaimStore',
+    'ACTIVE_TIMEOUT_SECONDS' : 10,
 }
 
 _SETTINGS.update(getattr(settings, 'CHAT', {}))
@@ -37,4 +38,4 @@ AUTH_USER_MODEL = getattr(
 
 THREAD_STORE = _SETTINGS.get('THREAD_STORE')
 CLAIM_STORE = _SETTINGS.get('CLAIM_STORE')
-
+ACTIVE_TIMEOUT_SECONDS = _SETTINGS.get('ACTIVE_TIMEOUT_SECONDS')

@@ -1,6 +1,8 @@
 from importlib import import_module
 from django.core.exceptions import ImproperlyConfigured
-from collections import Counter
+from datetime import datetime, timedelta
+
+from . import settings
 
 def load_thread_store(path):
     dot_pos = path.rfind('.')
@@ -33,17 +35,33 @@ class ThreadStore(object):
 
 class InMemoryThreadStore(ThreadStore):
     def __init__(self):
-        self.active = Counter()
+        self.active = {}
 
     def get_active(self):
+        now = datetime.now()
+        inactivity_threshold = timedelta(seconds=settings.ACTIVE_TIMEOUT_SECONDS)
+        for uid, last_seen in self.active.items():
+            time_since_active = (now - last_seen)
+            if time_since_active > inactivity_threshold:
+                del self.active[uid]
+
         return set(self.active.keys())
 
     def is_active(self, uid):
-        return self.active[uid] > 0
+        if uid in self.active:
+            time_since_active = (datetime.now() - self.active[uid])
+            if time_since_active < timedelta(seconds=settings.ACTIVE_TIMEOUT_SECONDS):
+                return True
+            else:
+                del self.active[uid]
+
+        return False
 
     def add_active(self, uid):
-        self.active[uid] += 1
-        assert self.active[uid] >= 0
+        self.active[uid] = datetime.now()
 
     def remove_active(self, uid):
-        self.active[uid] = max(0, self.active[uid] - 1)
+        try:
+            del self.active[uid]
+        except KeyError:
+            pass

@@ -22,7 +22,7 @@
 # OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-from django.core.urlresolvers import reverse_lazy
+from django.core.urlresolvers import reverse
 from django.views.generic import TemplateView
 from django.conf.urls import url, include
 
@@ -35,14 +35,20 @@ class TestChatView(TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super(TestChatView, self).get_context_data(**kwargs)
+        context['other'] = reverse(self.other_page)
         self.request.session.save()
-        print 'hih', self.request.session.session_key, self.request.session.items()
 
         return context
 
+class TestChatView1(TestChatView):
+    other_page = 'chat2'
+
+class TestChatView2(TestChatView):
+    other_page = 'chat1'
 
 urlpatterns = [
     url(r'', include('django.contrib.auth.urls')),
-    url(r'^chat/$', TestChatView.as_view(template_name="chat/chat.html")),
+    url(r'^chat/$', TestChatView1.as_view(template_name="chat/chat.html"), name='chat1'),
+    url(r'^chat2/$', TestChatView2.as_view(template_name="chat/chat.html"), name='chat2'),
     url(r'^chat-admin/$', TemplateView.as_view(template_name="chat/chat_admin.html")),
 ]
