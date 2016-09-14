@@ -40,15 +40,3 @@ thus need to define ``PAGE_SIZE`` in your settings.py
     +REST_FRAMEWORK = {
     +    'PAGE_SIZE': 25,
     +}
-
-This Django App does not send notification e-mails itself. All major
-updates that would result in a e-mail sent trigger signals though. It is
-straightforward to send e-mails on a signal trigger in the main
-Django project. We provide sample e-mail templates here in the
-saas/templates/notification/ directory.
-
-
-Release Notes
-=============
-
-

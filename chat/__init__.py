@@ -23,7 +23,7 @@
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 """
-PEP 386-compliant version number for the saas django app.
+PEP 386-compliant version number for the chat django app.
 """
 
 __version__ = '0.1.1-dev'

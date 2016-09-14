@@ -9,5 +9,3 @@ six==1.10.0
 txaio==2.5.1
 wsgiref==0.1.2
 zope.interface==4.2.0
-
-

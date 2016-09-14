@@ -24,7 +24,7 @@
 
 from distutils.core import setup
 
-import saas
+import chat
 
 requirements = []
 with open('./requirements.txt') as requirements_txt:
@@ -40,25 +40,16 @@ setup(
     author_email='support@djaodjin.com',
     install_requires=requirements,
     packages=['chat',
-              'chat.urls',
-              'chat.urls.api',
-              'chat.managers',
-              'chat.views',
-              'chat.api',
+#              'chat.urls',
+#              'chat.urls.api',
+#              'chat.managers',
+#              'chat.views',
+#              'chat.api',
               ],
-    # package_data={'saas': ['fixtures/*',
-    #                        'static/js/*.js',
-    #                        'templates/saas/*.html',
-    #                        'templates/saas/agreements/*.md',
-    #                        'templates/saas/app/*.html',
-    #                        'templates/saas/billing/*.html',
-    #                        'templates/saas/legal/*.html',
-    #                        'templates/saas/metrics/*.html',
-    #                        'templates/saas/profile/*.html']},
     url='https://github.com/djaodjin/djaodjin-chat/',
     download_url='https://github.com/djaodjin/djaodjin-chat/tarball/%s' \
         % chat.__version__,
     license='BSD',
-    description='DjaoDjin Web Chat applicatoin implementation',
+    description='DjaoDjin Web chat application',
     long_description=open('README.md').read(),
 )
