@@ -1,39 +1,112 @@
+# Copyright (c) 2016, DjaoDjin inc.
+# All rights reserved.
+#
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions are met:
+#
+# 1. Redistributions of source code must retain the above copyright notice,
+#    this list of conditions and the following disclaimer.
+# 2. Redistributions in binary form must reproduce the above copyright
+#    notice, this list of conditions and the following disclaimer in the
+#    documentation and/or other materials provided with the distribution.
+#
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+# "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
+# TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+# PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR
+# CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+# EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+# PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
+# OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+# WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
+# OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
+# ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+import json
+
 from channels import Group
-from ..models import ChatMessage
 from rest_framework import serializers
 from .. import settings
 from .. import threadstore, claimstore
-import json
+from ..models import ChatMessage
 
-thread_store = threadstore.load_thread_store(settings.THREAD_STORE)
-claim_store = claimstore.load_claim_store(settings.CLAIM_STORE)
-admin_store = threadstore.load_thread_store(settings.THREAD_STORE)
+thread_store = threadstore.load_thread_store(  #pylint:disable=invalid-name
+    settings.THREAD_STORE)
+claim_store = claimstore.load_claim_store(     #pylint:disable=invalid-name
+    settings.CLAIM_STORE)
+admin_store = threadstore.load_thread_store(   #pylint:disable=invalid-name
+    settings.THREAD_STORE)
 
-def s(serializer):
+
+class EmptySerializer(serializers.Serializer):
+
+    def create(self, validated_data):
+        raise RuntimeError(
+            "`%s.create()` is not meant to be called." % self.__class__)
+
+    def update(self, instance, validated_data):
+        raise RuntimeError(
+            "`%s.update()` is not meant to be called." % self.__class__)
+
+
+class AddClaimSerializer(EmptySerializer):
+    thread_id = serializers.CharField(max_length=255)
+    claimer = serializers.CharField(
+        max_length=255, required=False, allow_null=True)
+
+
+class GetMessagesSerializer(EmptySerializer):
+    thread_id = serializers.CharField(max_length=255, allow_null=True)
+    cursor = serializers.DateTimeField(format='iso-8601', allow_null=True)
+
+
+class RemoveClaimSerializer(EmptySerializer):
+    thread_id = serializers.CharField(max_length=255)
+    claimer = serializers.CharField(
+        max_length=255, required=False, allow_null=True)
+
+
+class SendSerializer(EmptySerializer):
+    text = serializers.CharField(max_length=255)
+
+
+class SendToSerializer(EmptySerializer):
+    thread_id = serializers.CharField(max_length=255)
+    text = serializers.CharField(max_length=255)
+
+
+class SetClaimsSerializer(EmptySerializer):
+    thread_id = serializers.CharField(max_length=255)
+    claimers = serializers.ListField(
+        serializers.CharField(max_length=255, required=False))
+
+
+class SubscribeToSerializer(EmptySerializer):
+    thread_id = serializers.CharField(max_length=255)
+
+
+class UnsubscribeSerializer(EmptySerializer):
+    thread_id = serializers.CharField(max_length=255)
+
+
+def serialize_with(serializer):
     def s_decorator(func):
         func.serializer = serializer
         return func
 
     return s_decorator
 
-class EmptySerializer(serializers.Serializer):
-    pass
 
-class SendSerializer(serializers.Serializer):
-    text = serializers.CharField(max_length=255)
-
-@s(SendSerializer)
+@serialize_with(SendSerializer)
 def send(message, text):
-
     thread_id = message.http_session['chat-thread']
-
-    cm = ChatMessage(# client=client,
+    chat_message = ChatMessage(# client=client,
                      message=text,
                      thread=thread_id)
     if not message.user.is_anonymous():
-        cm.user = message.user
+        chat_message.user = message.user
 
-    cm.save()
+    chat_message.save()
 
     Group(thread_id).send({
         "text": json.dumps(['message', text]),
@@ -61,7 +134,8 @@ def send(message, text):
         }]),
     })
 
-@s(EmptySerializer)
+
+@serialize_with(EmptySerializer)
 def subscribe(message):
     if 'chat-thread' in message.http_session:
         thread_id = message.http_session['chat-thread']
@@ -73,34 +147,29 @@ def subscribe(message):
     Group(thread_id).add(message.reply_channel)
 
 
-@s(EmptySerializer)
+@serialize_with(EmptySerializer)
 def subscribe_active(message):
-
     Group('__active').add(message.reply_channel)
 
     message.reply_channel.send({
-        'text': json.dumps(['became_active', list(thread_store.get_active()) ])
+        'text': json.dumps(['became_active', list(thread_store.get_active())])
     })
 
-@s(EmptySerializer)
-def subscribe_claims(message):
 
+@serialize_with(EmptySerializer)
+def subscribe_claims(message):
     Group('__claims').add(message.reply_channel)
     message.reply_channel.send({
         'text': json.dumps(['claimed', claim_store.get_claims()])
     })
 
-class SubscribeToSerializer(serializers.Serializer):
-    thread_id = serializers.CharField(max_length=255)
 
-@s(SubscribeToSerializer)
+@serialize_with(SubscribeToSerializer)
 def subscribe_to(message, thread_id):
     Group('%s-admin' % thread_id).add(message.reply_channel)
 
-class UnsubscribeSerializer(serializers.Serializer):
-    thread_id = serializers.CharField(max_length=255)
 
-@s(UnsubscribeSerializer)
+@serialize_with(UnsubscribeSerializer)
 def unsubscribe_to(message, thread_id):
     Group(thread_id).discard(message.reply_channel)
 
@@ -113,42 +182,32 @@ def unsubscribe_to(message, thread_id):
             'text': json.dumps(['became_inactive', [thread_id]])
         })
 
-class GetMessagesSerializer(serializers.Serializer):
-    thread_id = serializers.CharField(max_length=255, allow_null=True)
-    cursor = serializers.DateTimeField(format='iso-8601', allow_null=True)
 
-@s(GetMessagesSerializer)
+@serialize_with(GetMessagesSerializer)
 def get_messages(message, thread_id=None, cursor=None):
-
-    ms = ChatMessage.objects
+    queryset = ChatMessage.objects
 
     if thread_id is None:
-        ms = ms.filter(thread=message.http_session['chat-thread'])
+        queryset = queryset.filter(thread=message.http_session['chat-thread'])
     else:
         assert message.user.is_staff
+        queryset = queryset.filter(thread=thread_id)
 
-        ms = ms.filter(thread=thread_id)
-
-    ms = ms.order_by('-created_at')
+    queryset = queryset.order_by('-created_at')
 
     if cursor:
-        ms = ms.filter(created_at__lt=cursor)
+        queryset = queryset.filter(created_at__lt=cursor)
 
     message_batch = []
-    for m in ms.all()[:20]:
+    for chat_message in queryset.all()[:20]:
         message_info = {
-            'text': m.message,
-            't' : m.created_at.isoformat(),
-        }
-        if m.user:
-            message_info['from'] = m.user.username
-
+            'text': chat_message.message,
+            't' : chat_message.created_at.isoformat()}
+        if chat_message.user:
+            message_info['from'] = chat_message.user.username
         message_batch.append(message_info)
 
-
-    reply = {
-        'messages': message_batch
-    }
+    reply = {'messages': message_batch}
 
     if thread_id:
         reply['thread'] = thread_id,
@@ -160,11 +219,7 @@ def get_messages(message, thread_id=None, cursor=None):
     })
 
 
-class AddClaimSerializer(serializers.Serializer):
-    thread_id = serializers.CharField(max_length=255)
-    claimer = serializers.CharField(max_length=255, required=False, allow_null=True)
-
-@s(AddClaimSerializer)
+@serialize_with(AddClaimSerializer)
 def add_claim(message, thread_id, claimer=None):
 
     if claimer is None:
@@ -176,11 +231,7 @@ def add_claim(message, thread_id, claimer=None):
     })
 
 
-class RemoveClaimSerializer(serializers.Serializer):
-    thread_id = serializers.CharField(max_length=255)
-    claimer = serializers.CharField(max_length=255, required=False, allow_null=True)
-
-@s(RemoveClaimSerializer)
+@serialize_with(RemoveClaimSerializer)
 def remove_claim(message, thread_id, claimer=None):
     if claimer is None:
         claimer = message.user.username
@@ -192,22 +243,13 @@ def remove_claim(message, thread_id, claimer=None):
         })
 
 
-class SetClaimsSerializer(serializers.Serializer):
-    thread_id = serializers.CharField(max_length=255)
-    claimers = serializers.ListField(serializers.CharField(max_length=255, required=False))
-
-
-class SendToSerializer(serializers.Serializer):
-    thread_id = serializers.CharField(max_length=255)
-    text = serializers.CharField(max_length=255)
-
-@s(SendToSerializer)
+@serialize_with(SendToSerializer)
 def send_to(message, thread_id, text):
-    cm = ChatMessage(# client=client,
+    chat_message = ChatMessage(
                      message=text,
                      thread=thread_id,
                      user=message.user)
-    cm.save()
+    chat_message.save()
 
 
     Group(thread_id).send({
@@ -226,14 +268,14 @@ def send_to(message, thread_id, text):
 
 
 
-@s(EmptySerializer)
+@serialize_with(EmptySerializer)
 def whoami(message):
     message.reply_channel.send({
         'text': json.dumps(['youare', message.user.username])
     })
 
 
-@s(EmptySerializer)
+@serialize_with(EmptySerializer)
 def ping(message):
     if 'chat-thread' in message.http_session:
         thread_id = message.http_session['chat-thread']

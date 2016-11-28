@@ -1,0 +1,16 @@
+[{
+    "fields": {
+      "date_joined": "2014-01-01T00:00:00-00:00",
+      "email": "donny@djaodjin.com",
+      "first_name": "Donny",
+      "last_name": "Cooper",
+      "is_active": true,
+      "is_staff": true,
+      "is_superuser": false,
+      "last_login": "2014-01-01T00:00:00-00:00",
+      "password": "pbkdf2_sha256$10000$z0MBiWn0Rlem$iZdC6uHomlE07qGK/TqfcfxNzKJtFp03c0JILF1frRc=", 
+      "username": "donny"
+    },
+    "model": "auth.User", "pk": 1
+}
+]

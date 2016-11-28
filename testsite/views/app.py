@@ -22,7 +22,16 @@
 # OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-from django.contrib import messages
 from django.core.urlresolvers import reverse
+from django.http import HttpResponseRedirect
 from django.views.generic import TemplateView
 
+
+class AppView(TemplateView):
+
+    template_name = 'app.html'
+
+    def get(self, request, *args, **kwargs):
+        if self.request.user.is_authenticated() and self.request.user.is_staff:
+            return HttpResponseRedirect(reverse('chat_admin'))
+        return super(AppView, self).get(request, *args, **kwargs)

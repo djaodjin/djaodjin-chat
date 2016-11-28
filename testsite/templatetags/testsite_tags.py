@@ -23,13 +23,10 @@
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 from django import template
-from django.contrib.messages.api import get_messages
-from django.core.urlresolvers import reverse
-from django.forms import BaseForm
-from django.utils.text import capfirst
 
 
 register = template.Library()
+
 
 @register.filter()
 def as_html(form):

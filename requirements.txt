@@ -1,4 +1,4 @@
-Django>=1.10
+Django>=1.9
 Twisted>=16.2.0
 channels>=0.17.2
 djangorestframework>=3.4.3

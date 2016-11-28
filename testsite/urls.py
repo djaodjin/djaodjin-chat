@@ -30,6 +30,9 @@ from django.conf.urls import url, include
 from django.contrib import admin
 admin.autodiscover()
 
+from .views.app import AppView
+
+
 class TestChatView(TemplateView):
     template_name = "chat/chat.html"
 
@@ -48,7 +51,12 @@ class TestChatView2(TestChatView):
 
 urlpatterns = [
     url(r'', include('django.contrib.auth.urls')),
-    url(r'^chat/$', TestChatView1.as_view(template_name="chat/chat.html"), name='chat1'),
-    url(r'^chat2/$', TestChatView2.as_view(template_name="chat/chat.html"), name='chat2'),
-    url(r'^chat-admin/$', TemplateView.as_view(template_name="chat/chat_admin.html")),
+    url(r'^chat/$',
+        TestChatView1.as_view(template_name="chat/chat.html"), name='chat1'),
+    url(r'^chat2/$',
+        TestChatView2.as_view(template_name="chat/chat.html"), name='chat2'),
+    url(r'^chat-admin/$',
+        TemplateView.as_view(template_name="chat/chat_admin.html"),
+        name='chat_admin'),
+    url(r'^$', AppView.as_view(), name='app')
 ]

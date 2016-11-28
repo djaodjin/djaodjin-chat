@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div id="djaodjin-chat-root">
+  <div class="djaodjin-chat-chatlog">
+  </div>
+  <div>
+    <input class="djaodjin-chat-chatinput" type="text"></input>
+  </div>
+  <div>
+    <button class="djaodjin-chat-chatsend">Send</button>
+  </div>
+</div>
+
+<script type="text/javascript" charset="utf-8" src="/static/js/reconnecting-socket.js"></script>
+<script type="text/javascript" charset="utf-8" src="/static/js/djaodjin-chat-api.js"></script>
+<script type="text/javascript" charset="utf-8" src="/static/js/djaodjin-chat.js"></script>
+<script type="text/javascript" >
+  $('#djaodjin-chat-root').djchat();
+</script>
+{% endblock %}

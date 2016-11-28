@@ -33,8 +33,8 @@ _SETTINGS = {
 _SETTINGS.update(getattr(settings, 'CHAT', {}))
 
 
-AUTH_USER_MODEL = getattr(
-    settings, 'AUTH_USER_MODEL', 'django.contrib.auth.models.User')
+AUTH_USER_MODEL = getattr(settings, 'AUTH_USER_MODEL')
+SESSION_ENGINE = getattr(settings, 'SESSION_ENGINE')
 
 THREAD_STORE = _SETTINGS.get('THREAD_STORE')
 CLAIM_STORE = _SETTINGS.get('CLAIM_STORE')

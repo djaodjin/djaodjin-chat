@@ -27,9 +27,10 @@ Routes for the chat django app
 """
 
 from channels.routing import route
-from chat.consumers import (ws_message, ws_connect, ws_disconnect)
 
-channel_routing = [
+from ..consumers import (ws_message, ws_connect, ws_disconnect)
+
+channel_routing = [ #pylint:disable=invalid-name
     route("websocket.connect", ws_connect),
     route("websocket.receive", ws_message),
     route("websocket.disconnect", ws_disconnect),

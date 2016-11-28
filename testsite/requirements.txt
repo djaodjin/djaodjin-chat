@@ -1,8 +1,16 @@
-Django==1.10
+# production
+channels==0.17.2
+
+# development
+django-debug-panel==0.8.3
+django-debug-toolbar==1.5
+django-extensions==1.6.7
+
+# transitive dependencies
+Django==1.10.3
 Twisted==16.2.0
 asgiref==0.14.0
 autobahn==0.15.0
-channels==0.17.2
 daphne==0.14.3
 djangorestframework==3.4.3
 six==1.10.0

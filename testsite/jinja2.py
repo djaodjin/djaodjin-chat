@@ -26,10 +26,11 @@ from __future__ import absolute_import
 
 from jinja2.sandbox import SandboxedEnvironment as Jinja2Environment
 
-import testsite.templatetags.testsite_tags
+import testsite.templatetags.testsite_tags as testsite_tags
 
 
 def environment(**options):
     env = Jinja2Environment(**options)
-
+    env.filters['as_html'] = testsite_tags.as_html
+    env.filters['is_authenticated'] = testsite_tags.is_authenticated
     return env

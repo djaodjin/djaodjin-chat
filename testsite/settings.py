@@ -53,7 +53,7 @@ FEATURES_DEBUG = True
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(os.getcwd(), 'db.sqlite'),
+        'NAME': os.path.join(BASE_DIR, 'db.sqlite'),
         'USER': '',
         'PASSWORD': '',
         'HOST': '',
@@ -140,20 +140,27 @@ ROOT_URLCONF = 'testsite.urls'
 # Python dotted path to the WSGI application used by Django's runserver.
 WSGI_APPLICATION = 'testsite.wsgi.application'
 
-INSTALLED_APPS = (
+if DEBUG:
+    ENV_INSTALLED_APPS = (
+        'django.contrib.admin',
+        'django.contrib.admindocs',
+        'debug_toolbar',
+        'debug_panel',
+        'django_extensions',
+        )
+else:
+    ENV_INSTALLED_APPS = tuple([])
+
+INSTALLED_APPS = ENV_INSTALLED_APPS + (
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    # Uncomment the next line to enable the admin:
-    'django.contrib.admin',
-    # Uncomment the next line to enable admin documentation:
-    # 'django.contrib.admindocs',
     'rest_framework',
-    'testsite',
     'chat',
     'channels',
+    'testsite'
 )
 
 CHANNEL_LAYERS = {
@@ -238,7 +245,6 @@ if TEMPLATE_REVERT_TO_DJANGO:
                 'django.template.loaders.app_directories.Loader'],
             'libraries': {},
             'builtins': [
-                'chat.templatetags.chat_tags',
                 'testsite.templatetags.testsite_tags']
         }
     }

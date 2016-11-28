@@ -16,17 +16,17 @@ the prerequisites:
     $ source _installTop_/bin/activate
     $ pip install -r testsite/requirements.txt
 
-It remains to create the database and populate it with test data.
+It remains to write a SECRECT_KEY in the credentials configuration file,
+create the database and populate it with test data.
 
-    $ python ./manage.py migrate --run-syncdb --noinput
-    $ python ./manage.py loaddata testsite/fixtures/test_data.json
+    $ make initdb
 
 If all is well then, you are ready to run the server and browse the testsite.
 
     $ python manage.py runserver
 
     # Browse http://localhost:8000/
-    # Login with username: donny and password: yoyo
+    # Login as a manager with username: donny and password: yoyo
 
 
 Implementation Notes
