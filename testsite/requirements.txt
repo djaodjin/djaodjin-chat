@@ -8,11 +8,15 @@ django-extensions==1.6.7
 
 # transitive dependencies
 Django==1.10.3
-Twisted==16.2.0
 asgiref==0.14.0
 autobahn==0.15.0
-daphne==0.14.3
+daphne==0.15.0  # So we can use Fedora25 python3-twisted package
 djangorestframework==3.4.3
 six==1.10.0
 txaio==2.5.1
-zope.interface==4.2.0
+
+# Modules with native code
+# C/C++ library `dnf install python3-twisted` installs version 16.3.0 on Fedor25
+#Twisted==16.2.0
+# C/C++ library prerequisite for Twisted
+#zope.interface==4.2.0
