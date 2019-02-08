@@ -50,6 +50,9 @@ if not hasattr(sys.modules[__name__], "SECRET_KEY"):
 DEBUG = True
 FEATURES_DEBUG = True
 
+ALLOWED_HOSTS = ('*',)
+
+
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
